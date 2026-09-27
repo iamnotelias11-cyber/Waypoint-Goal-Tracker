@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Waypoint — Goal Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #e9e0cb;
+    --paper-line: #cfc3a3;
+    --ink: #2b2a26;
+    --ink-soft: #5c574c;
+    --pine: #2f4b3c;
+    --pine-soft: #dfe6dd;
+    --steel: #3e5c76;
+    --steel-soft: #dfe6ec;
+    --rust: #8c4a2f;
+    --rust-soft: #efe0d6;
+    --brass: #9a7526;
+    --paper-card: #f3ecd9;
+    --danger: #93372a;
+    --focus: #3e5c76;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #232019;
+      --paper-line: #3c3628;
+      --ink: #ece5d3;
+      --ink-soft: #b6ac93;
+      --pine: #8fb89e;
+      --pine-soft: #2a3730;
+      --steel: #8fb0c9;
+      --steel-soft: #232f3a;
+      --rust: #cf9270;
+      --rust-soft: #3a2c24;
+      --brass: #d1ab5c;
+      --paper-card: #2a261d;
+      --danger: #d98a78;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #232019;
+    --paper-line: #3c3628;
+    --ink: #ece5d3;
+    --ink-soft: #b6ac93;
+    --pine: #8fb89e;
+    --pine-soft: #2a3730;
+    --steel: #8fb0c9;
+    --steel-soft: #232f3a;
+    --rust: #cf9270;
+    --rust-soft: #3a2c24;
+    --brass: #d1ab5c;
+    --paper-card: #2a261d;
+    --danger: #d98a78;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  body {
+    font-family: "Work Sans", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100%;
+  }
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  header.masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--paper-line);
+    padding-bottom: 16px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .masthead h1 {
+    font-family: "Fraunces", serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: 26px;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  .masthead .dateline {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 36px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  section.panel { min-width: 0; }
+
+  h2.panel-title {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 19px;
+    margin: 0 0 14px;
+    color: var(--ink);
+  }
+
+  /* --- entry form --- */
+  form.entry {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+  form.entry input[type="text"] {
+    flex: 1 1 220px;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--ink-soft);
+    padding: 8px 2px;
+    font-family: "Work Sans", sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  form.entry input[type="text"]::placeholder { color: var(--ink-soft); opacity: 0.8; }
+  form.entry input[type="text"]:focus,
+  select:focus,
+  button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  select.priority-select {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--ink-soft);
+    color: var(--ink);
+    padding: 8px 2px;
+    font-family: "Work Sans", sans-serif;
+    font-size: 14px;
+  }
+  button {
+    font-family: "Work Sans", sans-serif;
+    cursor: pointer;
+  }
+  .btn-add {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .btn-add { color: #232019; }
+  }
+  :root[data-theme="dark"] .btn-add { color: #232019; }
+  .btn-add:hover { opacity: 0.88; }
+
+  /* --- ledger groups --- */
+  .priority-group { margin-bottom: 22px; }
+  .priority-group .group-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .swatch.high { background: var(--pine); }
+  .swatch.medium { background: var(--steel); }
+  .swatch.low { background: var(--rust); }
+
+  .goal-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .goal-row .title {
+    flex: 1;
+    min-width: 0;
+    font-size: 15.5px;
+  }
+  .goal-row .title .name { display: block; }
+  .goal-row .title .meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .goal-row select.row-priority {
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    padding: 2px 0;
+  }
+  .btn-log {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--paper-line);
+    color: var(--ink);
+    padding: 7px 2px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn-log:hover { border-color: var(--ink-soft); }
+  .btn-log:active { transform: translateY(1px); }
+  .btn-undo {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    padding: 7px 2px;
+    white-space: nowrap;
+  }
+  .btn-undo:hover:not([disabled]) { color: var(--danger); }
+  .btn-undo[disabled] { opacity: 0.35; cursor: default; }
+  .btn-del {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 6px 4px;
+  }
+  .btn-del:hover { color: var(--danger); }
+  .btn-del.confirming { color: var(--danger); font-weight: 600; }
+
+  .auto-note {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: -14px 0 20px;
+    max-width: 62ch;
+  }
+  .btn-add[disabled] { opacity: 0.6; cursor: default; }
+
+  .badge-ai {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--brass);
+    margin-left: 7px;
+    vertical-align: middle;
+  }
+  .badge-ai::before { content: "· "; }
+
+  .btn-suggest {
+    display: inline-block;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    padding: 0 0 2px;
+    font-size: 13px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .btn-suggest:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .btn-suggest[disabled] { opacity: 0.6; cursor: default; }
+
+  .suggest-card {
+    border-left: 2px solid var(--brass);
+    padding: 2px 0 2px 14px;
+    margin: -8px 0 22px;
+    font-size: 14px;
+  }
+  .suggest-card .s-title {
+    font-family: "Fraunces", serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .suggest-card .s-why {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .suggest-card .s-actions {
+    display: flex;
+    gap: 16px;
+  }
+  .suggest-card .s-actions button {
+    font-size: 13px;
+    padding: 0 0 1px;
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: none;
+    color: var(--ink-soft);
+  }
+  .suggest-card .s-actions button.s-accept {
+    color: var(--ink);
+    border-bottom-color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .pie-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pie-legend {
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pie-legend .leg-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .pie-legend .leg-row .v { color: var(--ink-soft); margin-left: auto; padding-left: 10px; }
+
+  .empty-state {
+    color: var(--ink-soft);
+    font-size: 14px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  /* --- stats sidebar --- */
+  .stat-card {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--paper-line);
+    padding: 0 0 20px;
+    margin-bottom: 20px;
+  }
+  .stat-card:last-child { border-bottom: none; }
+  .stat-big {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stat-big .num {
+    font-family: "Fraunces", serif;
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .stat-big .label {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .stat-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    padding: 6px 0;
+    border-top: 1px solid var(--paper-line);
+  }
+  .stat-line:first-of-type { border-top: none; }
+  .stat-line .v { font-weight: 600; }
+
+  .stat-sub-title {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  .trajectory-line {
+    font-family: "Fraunces", serif;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.35;
+    margin: 0 0 22px;
+  }
+
+  .ai-card { border-bottom: 1px solid var(--paper-line); }
+  .ai-analysis-text {
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0;
+  }
+  .ai-analysis-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+  }
+  .ai-analysis-meta button {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--paper-line);
+    color: var(--ink-soft);
+    font-size: 12px;
+    padding: 0 0 1px;
+  }
+  .ai-analysis-meta button:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .heat-cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+  }
+
+  footer.note {
+    margin-top: 34px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--paper-line);
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <h1>Waypoint</h1>
+    <span class="dateline" id="dateline"></span>
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <h2 class="panel-title">Entries</h2>
+      <form class="entry" id="entryForm">
+        <input type="text" id="goalInput" placeholder="What do you want to do?" autocomplete="off" required>
+        <select class="priority-select" id="prioritySelect">
+          <option value="auto" selected>Auto (AI decides)</option>
+          <option value="high">High priority</option>
+          <option value="medium">Medium priority</option>
+          <option value="low">Low priority</option>
+        </select>
+        <button type="submit" class="btn-add" id="addBtn">Add</button>
+      </form>
+      <div class="auto-note" id="autoNote">Priority is assigned automatically, weighed against what's already here — override it anytime.</div>
+
+      <button type="button" class="btn-suggest" id="suggestBtn">Suggest something to add</button>
+      <div class="suggest-card" id="suggestCard" hidden></div>
+
+      <div id="ledger"></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">Your trajectory</h2>
+      <div class="trajectory-line" id="trajectoryLine">Just getting started.</div>
+
+      <div class="stat-card ai-card">
+        <div class="stat-sub-title">AI read</div>
+        <div id="aiAnalysisBody">
+          <button type="button" class="btn-suggest" id="analyzeBtn">Analyze my trajectory</button>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-big">
+          <span class="num" id="streakNum">0</span>
+          <span class="label">day streak</span>
+        </div>
+        <div class="stat-line"><span>Longest streak</span><span class="v" id="longestStreak">0</span></div>
+        <div class="stat-line"><span>Open goals</span><span class="v" id="openGoals">0</span></div>
+        <div class="stat-line"><span>Logged today</span><span class="v" id="todayCount">0</span></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-sub-title">This week</div>
+        <div class="stat-big">
+          <span class="num" id="weekCount">0</span>
+          <span class="label" id="weekTrend">logged</span>
+        </div>
+        <div class="stat-line"><span>Total logged, all time</span><span class="v" id="totalCompletions">0</span></div>
+        <div class="stat-line"><span>Most logged entry</span><span class="v" id="topGoal">—</span></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-sub-title">Activity, last 4 weeks</div>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-sub-title">Priority mix</div>
+        <div class="pie-wrap">
+          <svg id="pieChart" viewBox="0 0 120 120" width="110" height="110" role="img" aria-label="Priority mix pie chart"></svg>
+          <div class="pie-legend" id="pieLegend"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="note">Kept only in this browser — nothing is sent anywhere.</footer>
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'field-log-goals-v1';
+  var goals = [];
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      goals = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      goals = [];
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+    } catch (e) {
+      /* storage unavailable — continue in-memory only */
+    }
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function dayKey(d) {
+    var dt = new Date(d);
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+
+  function todayKey() { return dayKey(Date.now()); }
+
+  var PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
+  var PRIORITY_LABEL = { high: 'High', medium: 'Medium', low: 'Low' };
+
+  function renderDateline() {
+    var el = document.getElementById('dateline');
+    var now = new Date();
+    el.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function renderLedger() {
+    var container = document.getElementById('ledger');
+    container.innerHTML = '';
+
+    if (goals.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.textContent = 'No entries yet. Add the first thing you want to do above.';
+      container.appendChild(empty);
+      return;
+    }
+
+    var groups = { high: [], medium: [], low: [] };
+    goals.forEach(function (g) { groups[g.priority].push(g); });
+
+    ['high', 'medium', 'low'].forEach(function (p) {
+      if (groups[p].length === 0) return;
+      var groupEl = document.createElement('div');
+      groupEl.className = 'priority-group';
+
+      var head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML = '<span class="swatch ' + p + '"></span>' + PRIORITY_LABEL[p] + ' priority';
+      groupEl.appendChild(head);
+
+      groups[p].sort(function (a, b) { return b.createdAt - a.createdAt; }).forEach(function (g) {
+        groupEl.appendChild(renderRow(g));
+      });
+
+      container.appendChild(groupEl);
+    });
+  }
+
+  function renderRow(g) {
+    var row = document.createElement('div');
+    row.className = 'goal-row';
+
+    var title = document.createElement('div');
+    title.className = 'title';
+    var count = g.completions.length;
+    var last = count ? new Date(g.completions[count - 1]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
+    title.innerHTML = '<span class="name"></span><span class="meta"></span>';
+    title.querySelector('.name').textContent = g.title;
+    if (g.autoAssigned) {
+      var badge = document.createElement('span');
+      badge.className = 'badge-ai';
+      badge.textContent = 'auto';
+      badge.title = 'Priority assigned automatically';
+      title.querySelector('.name').appendChild(badge);
+    }
+    title.querySelector('.meta').textContent = count
+      ? count + (count === 1 ? ' time logged' : ' times logged') + (last ? ' · last ' + last : '')
+      : 'Not logged yet';
+    row.appendChild(title);
+
+    var select = document.createElement('select');
+    select.className = 'row-priority';
+    ['high', 'medium', 'low'].forEach(function (p) {
+      var opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = PRIORITY_LABEL[p];
+      if (p === g.priority) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', function () {
+      g.priority = select.value;
+      g.autoAssigned = false;
+      save();
+      renderAll();
+    });
+    row.appendChild(select);
+
+    var logBtn = document.createElement('button');
+    logBtn.className = 'btn-log';
+    logBtn.type = 'button';
+    logBtn.textContent = 'Log it';
+    logBtn.addEventListener('click', function () {
+      g.completions.push(Date.now());
+      save();
+      renderAll();
+    });
+    row.appendChild(logBtn);
+
+    var undoBtn = document.createElement('button');
+    undoBtn.className = 'btn-undo';
+    undoBtn.type = 'button';
+    undoBtn.textContent = 'Undo';
+    undoBtn.title = 'Remove the most recent log for this entry';
+    undoBtn.disabled = count === 0;
+    undoBtn.addEventListener('click', function () {
+      if (!g.completions.length) return;
+      g.completions.pop();
+      save();
+      renderAll();
+    });
+    row.appendChild(undoBtn);
+
+    var delBtn = document.createElement('button');
+    delBtn.className = 'btn-del';
+    delBtn.type = 'button';
+    delBtn.textContent = 'Remove';
+    var confirming = false;
+    delBtn.addEventListener('click', function () {
+      if (!confirming) {
+        confirming = true;
+        delBtn.textContent = 'Confirm?';
+        delBtn.classList.add('confirming');
+        setTimeout(function () {
+          if (confirming) {
+            confirming = false;
+            delBtn.textContent = 'Remove';
+            delBtn.classList.remove('confirming');
+          }
+        }, 3000);
+        return;
+      }
+      goals = goals.filter(function (x) { return x.id !== g.id; });
+      save();
+      renderAll();
+    });
+    row.appendChild(delBtn);
+
+    return row;
+  }
+
+  function completionDaySet() {
+    var days = new Set();
+    goals.forEach(function (g) {
+      g.completions.forEach(function (ts) { days.add(dayKey(ts)); });
+    });
+    return days;
+  }
+
+  function computeStreak() {
+    var days = completionDaySet();
+    var streak = 0;
+    var cursor = new Date();
+    while (true) {
+      var key = dayKey(cursor.getTime());
+      if (days.has(key)) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function computeLongestStreak() {
+    var days = completionDaySet();
+    if (days.size === 0) return 0;
+    var sorted = Array.from(days).map(function (key) {
+      var parts = key.split('-');
+      return new Date(+parts[0], +parts[1] - 1, +parts[2]).getTime();
+    }).sort(function (a, b) { return a - b; });
+
+    var longest = 1, current = 1;
+    for (var i = 1; i < sorted.length; i++) {
+      var diff = Math.round((sorted[i] - sorted[i - 1]) / 86400000);
+      if (diff === 1) {
+        current++;
+        if (current > longest) longest = current;
+      } else if (diff > 1) {
+        current = 1;
+      }
+    }
+    return longest;
+  }
+
+  function countBetween(startDaysAgo, endDaysAgo) {
+    // inclusive range, counted in days-ago from today (0 = today)
+    var count = 0;
+    goals.forEach(function (g) {
+      g.completions.forEach(function (ts) {
+        var daysAgo = Math.floor((Date.now() - ts) / 86400000);
+        if (daysAgo >= endDaysAgo && daysAgo <= startDaysAgo) count++;
+      });
+    });
+    return count;
+  }
+
+  function renderStats() {
+    var total = 0;
+    goals.forEach(function (g) { total += g.completions.length; });
+    document.getElementById('totalCompletions').textContent = total;
+    document.getElementById('openGoals').textContent = goals.length;
+    document.getElementById('streakNum').textContent = computeStreak();
+    document.getElementById('longestStreak').textContent = computeLongestStreak();
+
+    var tKey = todayKey();
+    var todayCount = 0;
+    goals.forEach(function (g) {
+      g.completions.forEach(function (ts) { if (dayKey(ts) === tKey) todayCount++; });
+    });
+    document.getElementById('todayCount').textContent = todayCount;
+
+    var thisWeek = countBetween(6, 0);
+    var lastWeek = countBetween(13, 7);
+    document.getElementById('weekCount').textContent = thisWeek;
+    var trendEl = document.getElementById('weekTrend');
+    var diff = thisWeek - lastWeek;
+    if (lastWeek === 0 && thisWeek === 0) {
+      trendEl.textContent = 'logged this week';
+    } else if (diff > 0) {
+      trendEl.textContent = 'logged, +' + diff + ' vs last week';
+    } else if (diff < 0) {
+      trendEl.textContent = 'logged, ' + diff + ' vs last week';
+    } else {
+      trendEl.textContent = 'logged, same as last week';
+    }
+
+    var topGoal = null;
+    goals.forEach(function (g) {
+      if (g.completions.length > 0 && (!topGoal || g.completions.length > topGoal.completions.length)) {
+        topGoal = g;
+      }
+    });
+    document.getElementById('topGoal').textContent = topGoal
+      ? topGoal.title + ' (' + topGoal.completions.length + ')'
+      : '—';
+
+    renderHeatmap();
+    renderPie();
+    updateTrajectoryLine(thisWeek, lastWeek);
+  }
+
+  function updateTrajectoryLine(thisWeek, lastWeek) {
+    var line = document.getElementById('trajectoryLine');
+    var streak = computeStreak();
+    var total = 0;
+    goals.forEach(function (g) { total += g.completions.length; });
+
+    var text;
+    if (total === 0) {
+      text = 'Nothing logged yet — add something above and log it once you do it.';
+    } else if (streak >= 7) {
+      text = 'You\u2019re ' + streak + ' days deep. This is what momentum looks like.';
+    } else if (streak >= 3) {
+      text = 'Building momentum — ' + streak + ' days running.';
+    } else if (streak === 0 && thisWeek === 0) {
+      text = 'The streak\u2019s cold. One log today restarts it.';
+    } else if (thisWeek > lastWeek) {
+      text = 'Picking up pace — more logged this week than last.';
+    } else if (thisWeek < lastWeek && lastWeek > 0) {
+      text = 'Slower week than last — still time to close the gap.';
+    } else {
+      text = 'Steady. Keep the log honest and the pattern will show itself.';
+    }
+    line.textContent = text;
+  }
+
+  var PRIORITY_COLOR = { high: '#2f4b3c', medium: '#3e5c76', low: '#8c4a2f' };
+
+  function renderPie() {
+    var svg = document.getElementById('pieChart');
+    var legend = document.getElementById('pieLegend');
+    svg.innerHTML = '';
+    legend.innerHTML = '';
+
+    var counts = { high: 0, medium: 0, low: 0 };
+    goals.forEach(function (g) { counts[g.priority]++; });
+    var total = goals.length;
+
+    var cx = 60, cy = 60, r = 52;
+
+    if (total === 0) {
+      var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      ring.setAttribute('cx', cx);
+      ring.setAttribute('cy', cy);
+      ring.setAttribute('r', r);
+      ring.setAttribute('fill', 'none');
+      ring.setAttribute('stroke', 'var(--paper-line)');
+      ring.setAttribute('stroke-width', '14');
+      svg.appendChild(ring);
+    } else {
+      var start = -Math.PI / 2;
+      ['high', 'medium', 'low'].forEach(function (p) {
+        var c = counts[p];
+        if (c === 0) return;
+        var frac = c / total;
+        var end = start + frac * Math.PI * 2;
+        var large = (end - start) > Math.PI ? 1 : 0;
+        var x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start);
+        var x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end);
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        var d;
+        if (frac >= 0.9999) {
+          // full circle: draw as two arcs so it renders
+          var mid = start + Math.PI;
+          var xm = cx + r * Math.cos(mid), ym = cy + r * Math.sin(mid);
+          d = 'M ' + cx + ' ' + cy +
+              ' L ' + x1 + ' ' + y1 +
+              ' A ' + r + ' ' + r + ' 0 1 1 ' + xm + ' ' + ym +
+              ' A ' + r + ' ' + r + ' 0 1 1 ' + x1 + ' ' + y1 + ' Z';
+        } else {
+          d = 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 +
+              ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2 + ' Z';
+        }
+        path.setAttribute('d', d);
+        path.setAttribute('fill', PRIORITY_COLOR[p]);
+        svg.appendChild(path);
+        start = end;
+      });
+    }
+
+    ['high', 'medium', 'low'].forEach(function (p) {
+      var row = document.createElement('div');
+      row.className = 'leg-row';
+      var sw = document.createElement('span');
+      sw.className = 'swatch ' + p;
+      var label = document.createElement('span');
+      label.textContent = PRIORITY_LABEL[p];
+      var val = document.createElement('span');
+      val.className = 'v';
+      val.textContent = counts[p];
+      row.appendChild(sw);
+      row.appendChild(label);
+      row.appendChild(val);
+      legend.appendChild(row);
+    });
+  }
+
+  function renderHeatmap() {
+    var grid = document.getElementById('heatmap');
+    grid.innerHTML = '';
+
+    var days = [];
+    var maxCount = 0;
+    for (var i = 27; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      var key = dayKey(d.getTime());
+      var c = 0;
+      goals.forEach(function (g) {
+        g.completions.forEach(function (ts) { if (dayKey(ts) === key) c++; });
+      });
+      days.push({ date: d, count: c });
+      if (c > maxCount) maxCount = c;
+    }
+
+    days.forEach(function (item) {
+      var cell = document.createElement('div');
+      cell.className = 'heat-cell';
+      if (item.count === 0) {
+        cell.style.background = 'var(--paper-line)';
+      } else {
+        cell.style.background = 'var(--pine)';
+        cell.style.opacity = Math.min(1, 0.35 + 0.65 * (item.count / maxCount));
+      }
+      cell.title = item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+        ': ' + item.count + (item.count === 1 ? ' log' : ' logs');
+      grid.appendChild(cell);
+    });
+  }
+
+  function renderAll() {
+    renderLedger();
+    renderStats();
+  }
+
+  var sampleAPI = null;
+  var sampleUnavailable = false;
+
+  async function getSample() {
+    if (sampleUnavailable) return null;
+    if (sampleAPI) return sampleAPI;
+    try {
+      sampleAPI = (window.claude && typeof window.claude.use === 'function')
+        ? await window.claude.use('sample')
+        : null;
+    } catch (e) {
+      sampleAPI = null;
+    }
+    if (!sampleAPI) sampleUnavailable = true;
+    return sampleAPI;
+  }
+
+  async function aiAssignPriority(title) {
+    var sample = await getSample();
+    if (!sample) return null;
+
+    var context = goals.slice(-12).map(function (g) {
+      return '- "' + g.title + '" -> ' + g.priority;
+    }).join('\n') || '(no existing entries yet)';
+
+    var prompt = 'You triage a personal goal/to-do log. Given the entries already logged below ' +
+      'and their assigned priority, assign a priority to the NEW entry, relative to the others, ' +
+      'based on urgency, impact, and time-sensitivity implied by its wording.\n\n' +
+      'Existing entries:\n' + context + '\n\n' +
+      'New entry: "' + title + '"\n\n' +
+      'Respond with ONLY a JSON object of the exact shape {"priority": "high" | "medium" | "low"}. ' +
+      'No other text.';
+
+    try {
+      var result = await sample.json(prompt, { modelTier: 'quick' });
+      var p = result && result.priority;
+      if (p === 'high' || p === 'medium' || p === 'low') return p;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function aiSuggestGoal() {
+    var sample = await getSample();
+    if (!sample) return null;
+
+    var list = goals.map(function (g) {
+      return '- "' + g.title + '" (' + g.priority + ', logged ' + g.completions.length + 'x)';
+    }).join('\n') || '(the log is currently empty)';
+
+    var prompt = 'You help someone round out their personal goal log. Here is everything currently in it:\n\n' +
+      list + '\n\n' +
+      'Suggest ONE new entry they do not already have that would round out their life well — it can be ' +
+      'a hobby, a habit, a relationship, a rest/recovery item, or a practical task, whatever seems most ' +
+      'genuinely missing given the mix above (e.g. if everything is work/fitness, consider a hobby or social ' +
+      'or rest entry; if everything is passive, consider something active). Keep the entry title short and ' +
+      'action-phrased, the way the existing ones are written. Also assign it a priority and a one-sentence ' +
+      'reason.\n\n' +
+      'Respond with ONLY a JSON object of the exact shape ' +
+      '{"title": "...", "priority": "high" | "medium" | "low", "why": "one short sentence"}. No other text.';
+
+    try {
+      var result = await sample.json(prompt, { modelTier: 'default' });
+      if (result && result.title && result.priority) return result;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function aiAnalyzeTrajectory() {
+    var sample = await getSample();
+    if (!sample) return null;
+
+    var streak = computeStreak();
+    var longest = computeLongestStreak();
+    var thisWeek = countBetween(6, 0);
+    var lastWeek = countBetween(13, 7);
+    var total = 0;
+    goals.forEach(function (g) { total += g.completions.length; });
+    var counts = { high: 0, medium: 0, low: 0 };
+    goals.forEach(function (g) { counts[g.priority]++; });
+
+    var list = goals.map(function (g) {
+      return '- "' + g.title + '", priority: ' + g.priority + ', logged ' + g.completions.length + 'x';
+    }).join('\n') || '(no entries yet)';
+
+    var prompt = 'You are reviewing someone\'s personal goal log and giving them a short, honest read on ' +
+      'their trajectory.\n\n' +
+      'Entries:\n' + list + '\n\n' +
+      'Current streak: ' + streak + ' day(s). Longest streak: ' + longest + ' day(s). ' +
+      'Logged this week: ' + thisWeek + '. Logged last week: ' + lastWeek + '. ' +
+      'Total ever logged: ' + total + '. ' +
+      'Priority mix of open entries — high: ' + counts.high + ', medium: ' + counts.medium + ', low: ' + counts.low + '.\n\n' +
+      'Write 3-4 plain sentences, addressed to them directly as "you". Point out a real pattern in the data ' +
+      '(e.g. momentum, stalling, a priority imbalance, an entry being neglected relative to its priority, or ' +
+      'consistency). Be specific and use the numbers rather than being generic. Be honest, not just encouraging. ' +
+      'End with one concrete, actionable suggestion for what to do next. No headers, no bullet points, no bold text.';
+
+    try {
+      var result = await sample(prompt, { modelTier: 'default' });
+      return result && result.text ? result.text.trim() : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  var analyzeBtn = document.getElementById('analyzeBtn');
+  var aiAnalysisBody = document.getElementById('aiAnalysisBody');
+
+  function wireAnalyzeButton(btn) {
+    btn.addEventListener('click', async function () {
+      btn.disabled = true;
+      btn.textContent = 'Reading the log\u2026';
+
+      var analysis = await aiAnalyzeTrajectory();
+
+      if (!analysis) {
+        aiAnalysisBody.innerHTML = '<div class="ai-analysis-meta"></div>';
+        var fail = document.createElement('p');
+        fail.className = 'ai-analysis-text';
+        fail.textContent = 'Couldn\u2019t read the trajectory just now — try again in a moment.';
+        aiAnalysisBody.insertBefore(fail, aiAnalysisBody.firstChild);
+        var retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.textContent = 'Try again';
+        aiAnalysisBody.querySelector('.ai-analysis-meta').appendChild(retryBtn);
+        wireAnalyzeButton(retryBtn);
+        return;
+      }
+
+      aiAnalysisBody.innerHTML = '';
+      var p = document.createElement('p');
+      p.className = 'ai-analysis-text';
+      p.textContent = analysis;
+      aiAnalysisBody.appendChild(p);
+
+      var meta = document.createElement('div');
+      meta.className = 'ai-analysis-meta';
+      var reBtn = document.createElement('button');
+      reBtn.type = 'button';
+      reBtn.textContent = 'Re-analyze';
+      meta.appendChild(reBtn);
+      aiAnalysisBody.appendChild(meta);
+      wireAnalyzeButton(reBtn);
+    });
+  }
+  wireAnalyzeButton(analyzeBtn);
+
+  var suggestBtn = document.getElementById('suggestBtn');
+  var suggestCard = document.getElementById('suggestCard');
+
+  suggestBtn.addEventListener('click', async function () {
+    suggestBtn.disabled = true;
+    suggestBtn.textContent = 'Thinking…';
+    suggestCard.hidden = true;
+
+    var suggestion = await aiSuggestGoal();
+
+    suggestBtn.disabled = false;
+    suggestBtn.textContent = 'Suggest something to add';
+
+    if (!suggestion) {
+      suggestCard.hidden = false;
+      suggestCard.innerHTML = '';
+      var fail = document.createElement('div');
+      fail.className = 's-why';
+      fail.textContent = 'Couldn\'t get a suggestion just now — try again in a moment.';
+      suggestCard.appendChild(fail);
+      return;
+    }
+
+    suggestCard.hidden = false;
+    suggestCard.innerHTML =
+      '<div class="s-title"></div>' +
+      '<div class="s-why"></div>' +
+      '<div class="s-actions">' +
+        '<button type="button" class="s-accept">Add it</button>' +
+        '<button type="button" class="s-dismiss">Not for me</button>' +
+      '</div>';
+    suggestCard.querySelector('.s-title').textContent = suggestion.title;
+    suggestCard.querySelector('.s-why').textContent = suggestion.why || '';
+
+    suggestCard.querySelector('.s-accept').addEventListener('click', function () {
+      goals.push({
+        id: uid(),
+        title: suggestion.title,
+        priority: suggestion.priority,
+        autoAssigned: true,
+        createdAt: Date.now(),
+        completions: []
+      });
+      save();
+      suggestCard.hidden = true;
+      renderAll();
+    });
+    suggestCard.querySelector('.s-dismiss').addEventListener('click', function () {
+      suggestCard.hidden = true;
+    });
+  });
+
+  document.getElementById('entryForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var input = document.getElementById('goalInput');
+    var prioritySelect = document.getElementById('prioritySelect');
+    var choice = prioritySelect.value;
+    var title = input.value.trim();
+    if (!title) return;
+
+    var addBtn = document.getElementById('addBtn');
+    var priority = choice;
+    var autoAssigned = false;
+
+    if (choice === 'auto') {
+      addBtn.disabled = true;
+      addBtn.textContent = 'Weighing…';
+      var assigned = await aiAssignPriority(title);
+      addBtn.disabled = false;
+      addBtn.textContent = 'Add';
+      if (assigned) {
+        priority = assigned;
+        autoAssigned = true;
+      } else {
+        priority = 'medium';
+        autoAssigned = false;
+      }
+    }
+
+    goals.push({ id: uid(), title: title, priority: priority, autoAssigned: autoAssigned, createdAt: Date.now(), completions: [] });
+    save();
+    input.value = '';
+    renderAll();
+    input.focus();
+  });
+
+  load();
+  renderDateline();
+  renderAll();
+  getSample().then(function (s) {
+    if (!s) {
+      document.getElementById('autoNote').textContent = 'Automatic priority assignment isn\'t available in this view — new entries default to Medium unless you pick a priority yourself.';
+      suggestBtn.disabled = true;
+      suggestBtn.textContent = 'Suggestions unavailable here';
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = 'Analysis unavailable here';
+    }
+  });
+})();
+</script>
+</body>
+</html>
